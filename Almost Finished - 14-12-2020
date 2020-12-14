@@ -1,0 +1,207 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
+
+public class Main {
+	 //constructor to handle our database
+    public Main() throws SQLException {
+    } 
+    
+    //Import our scanner to use later
+    static Scanner scanner = new Scanner(System.in);
+    
+    //pass in info for our SQL connection
+    private static final String URL = "jdbc:mysql://localhost:3306/restaurant";
+    private static final String USERNAME = "####";
+    private static final String PASWORD = "####";
+    Connection connection = DriverManager.getConnection(URL, USERNAME, PASWORD);
+    
+    //characteristics of our menu
+    int mealID;
+    String dishName;
+    int prepTime;
+    float price;
+    
+    //SQL Queries
+    //query below is to grab the entire menu
+    private final String DISPLAY_ENTIRE_MENU_QUERY = "SELECT meal.meal_name, meal_type.meal_classification, category.meal_type, meal.prep_time, meal.price FROM Meal INNER JOIN meal_type ON meal.meal_typeFK = meal_type.meal_id INNER JOIN category ON meal.categoryFK = category.category_id";
+    private final String CREATE_NEW_ITEM_QUERY = "INSERT INTO meal(meal_typeFK,categoryFK,meal_name,prep_time,price) VALUES (?,?,?,?,?)";
+    //Update menu item query
+    private final String UPDATE_ITEM_QUERY = "UPDATE meal (meal_typeFK, categoryFK, meal_name, prep_time, price) VALUES (?,?,?,?,?) WHERE id = ?";
+    //delete menu item query
+    private final String DELETE_ITEM_QUERY = "DELETE from meal WHERE meal_name = ?";
+    //method to get our connection
+    public Connection getConnection () {
+        try {
+            Connection connection = DriverManager.getConnection(URL, USERNAME, PASWORD);
+            if (connection != null) {
+                System.out.println("Connection successful!");
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return connection;
+    }
+    
+    
+    //method to display all rows in database
+    void displayEntireMenu() throws SQLException { 
+        Statement statement = connection.createStatement();
+        ResultSet result = statement.executeQuery(DISPLAY_ENTIRE_MENU_QUERY);
+        while(result.next()) {
+            String mealName = result.getString(1);
+            String mealClassification = result.getString(2);
+            String mealType = result.getString(3);
+            int prepTime = result.getInt(4);
+            float price = result.getFloat(5);
+            System.out.println("Meal Name: "+ mealName + "\tMeal Classification: "+ mealClassification +"\t\tMeal Type: "+ mealType + "\tPrep Time: "+ prepTime +" mins" + "\tPrice:" + price);
+        }
+    }
+    //method to create new member
+    void createNewMenuOption() throws SQLException {
+        System.out.println("Enter meal classificaiton of item: ");
+        System.out.println("(1) Breakfest");
+        System.out.println("(2) Lunch");
+        System.out.println("(3) Dinner");
+        int mealClassify = scanner.nextInt();
+        System.out.println("Enter meal type of item: ");
+        System.out.println("(1) Entree");
+        System.out.println("(2) Side");
+        System.out.println("(3) Appetizer");
+        int mealType = scanner.nextInt();
+        System.out.print("Enter meal name (NO SPACES): ");
+    	String mealName = scanner.nextLine();
+        System.out.print("Enter prep time:");
+        int prepTime = scanner.nextInt();
+        System.out.print("Enter price: ");
+        float price = scanner.nextFloat();
+        PreparedStatement ps = connection.prepareStatement(CREATE_NEW_ITEM_QUERY);
+        ps.setInt(1, mealClassify);
+        ps.setInt(2, mealType);
+        ps.setString(3, mealName);
+        ps.setInt(4, prepTime);
+        ps.setFloat(5, price);
+        System.out.println("Meal Name:" + mealName + "\tMeal Classification: "+ mealClassify +"\t\tMeal Type: "+ mealType + "\tPrep Time: "+ prepTime +" mins" + "\tPrice:" + price);
+        ps.executeUpdate();
+    }
+    private final String updateMenuByItemName_QUERY = "UPDATE meal SET meal_typeFK = ?,categoryFK = ?, meal_name = ?, prep_time =?, price=? WHERE meal_name = ?";
+   void updateMenuByItemName() throws SQLException {
+	   System.out.println("Enter item name you wish to update:");
+	   String mealName = scanner.next();
+	   PreparedStatement ps = connection.prepareStatement(updateMenuByItemName_QUERY);
+	   System.out.println("Enter new meal name (NO SPACES):");
+       String mealName1 = scanner.next();
+	     System.out.println("Enter meal classificaiton of item: ");
+	        System.out.println("(1) Breakfest");
+	        System.out.println("(2) Lunch");
+	        System.out.println("(3) Dinner");
+	        int mealClassify = scanner.nextInt();
+	        System.out.println("Enter meal type of item: ");
+	        System.out.println("(1) Entree");
+	        System.out.println("(2) Side");
+	        System.out.println("(3) Appetizer");
+	        int mealType = scanner.nextInt();
+	        System.out.print("Enter prep time:");
+	        int prepTime = scanner.nextInt();
+	        System.out.print("Enter price: ");
+	        float price = scanner.nextFloat();	
+	        ps.setInt(1, mealClassify);
+	        ps.setInt(2, mealType);
+	        ps.setString(3, mealName1);
+	        ps.setInt(4, prepTime);
+	        ps.setFloat(5, price);
+	        ps.setString(6, mealName);
+	        ps.executeUpdate();
+   }
+    
+    
+    
+    //method to update menu item
+    void updateMenuOption() throws SQLException {      
+    	
+        System.out.println("Enter meal classificaiton of item: ");
+        System.out.println("(1) Breakfest");
+        System.out.println("(2) Lunch");
+        System.out.println("(3) Dinner");
+        int mealClassify = scanner.nextInt();
+        System.out.println("Enter meal type of item: ");
+        System.out.println("(1) Entree");
+        System.out.println("(2) Side");
+        System.out.println("(3) Appetizer");
+        int mealType = scanner.nextInt();
+        System.out.print("Enter new meal name: ");
+        String mealName = scanner.next();
+        System.out.print("Enter prep time:");
+        int prepTime = scanner.nextInt();
+        System.out.print("Enter price: ");
+        float price = scanner.nextFloat();
+        PreparedStatement ps = connection.prepareStatement(UPDATE_ITEM_QUERY);
+        ps.setInt(1, mealClassify);
+        ps.setInt(2, mealType);
+        ps.setString(3, mealName);
+        ps.setInt(4, prepTime);
+        ps.setFloat(5, price);
+        System.out.println("Meal Name:" + mealName + "\tMeal Classification: "+ mealClassify +"\t\tMeal Type: "+ mealType + "\tPrep Time: "+ prepTime +" mins" + "\tPrice:" + price);
+        ps.executeUpdate();
+        
+    }
+    // delete menu item method
+    public void deleteMenuOption() throws SQLException {
+        System.out.print("Enter meal name (NO SPACES): ");
+        String mealName = scanner.next();
+        PreparedStatement ps = connection.prepareStatement(DELETE_ITEM_QUERY);
+        ps.setString(1, mealName);
+        ps.executeUpdate();
+        System.out.println(mealName + " successfully deleted");
+    }
+    
+    
+    // method to print menu choices
+    void printMenu() {
+    	System.out.println("(1) Display entire menu");
+    	System.out.println("(2) Create new menu item");
+    	System.out.println("(3) Update menu item");
+    	System.out.println("(4) Delete menu item");
+    	System.out.println("(5) Exit program");
+    }
+    public static void main(String[] args) throws SQLException {            
+        //eventually just put all the methods inside a menu driven app but for now just get the methods to do what we want them to
+
+        Main menu = new Main();
+        menu.getConnection();
+       
+        int selection = 0;
+    	System.out.println("Hello, welcome to my restaurant applicaiton. Please choose from the following options");
+       
+        do {
+        	menu.printMenu();
+        	selection = scanner.nextInt();
+            try {
+            if (selection < 1 || selection >5) {
+            	System.out.println("ERROR.......Please select a valid option.");
+            }
+            if (selection == 1) {
+                menu.displayEntireMenu();
+            }else if (selection == 2) {
+                menu.createNewMenuOption();
+            }else if (selection == 3) {
+            	 menu.updateMenuByItemName();
+            }else if (selection == 4) {
+               menu.deleteMenuOption();
+            }
+            } catch(SQLException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Press enter to continue...");
+            scanner.nextLine();
+        } while (selection != 5);
+}
+
+}
