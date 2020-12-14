@@ -95,7 +95,7 @@ public class Main {
 		Main menu = new Main();
 		menu.getConnection(); //establish connection first
 		menu.displayEntireMenu(); //display menu
-	//	menu.createNewMenuOption(); //Create new menu option
+		menu.createNewMenuOption(); //Create new menu option
 	}
 
 	
